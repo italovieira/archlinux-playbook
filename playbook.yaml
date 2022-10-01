@@ -4,8 +4,21 @@
 
   vars:
     dotfiles_path: ~/dotfiles/
+    user: italo
 
   tasks:
+    - name: Create user
+      become: true
+      user:
+        name: '{{ user }}'
+        state: present
+        groups:
+          - wheel
+          - docker
+        append: yes
+        generate_ssh_key: yes
+        ssh_key_type: ed25519
+
     - name: Synchronize database and upgrade packages
       become: true
       pacman:
@@ -16,29 +29,23 @@
       become: true
       pacman:
         name:
-          # development
           - git
           - python
           - neovim
           - docker
-          # DE
           - wayland
           - pipewire
           - sway
           - waybar
           - dunst
-          # terminal
           - zsh
           - tmux
           - alacritty
-          # browser
           - firefox
-          # media
           - mpv
-          # general
+          - sudo
           - openssh
           - p7zip
-          # extra
           - stow
         state: present
 
@@ -47,12 +54,12 @@
         - name: Clone or update dotfiles repository
           git:
             repo: https://github.com/italovieira/dotfiles.git
-            dest: "{{ dotfiles_path }}"
+            dest: '{{ dotfiles_path }}'
             update: no
         - name: Put dotfiles symlinks in the target paths
           command:
             cmd: stow {{ item }}
-            chdir: "{{ dotfiles_path }}"
+            chdir: '{{ dotfiles_path }}'
           loop:
             - zsh
             - git
