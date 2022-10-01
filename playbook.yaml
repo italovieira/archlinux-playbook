@@ -1,0 +1,46 @@
+---
+- name: Setup ArchLinux system
+  hosts: localhost
+
+  tasks:
+    - name: Synchronize database and upgrade packages
+      become: true
+      community.general.pacman:
+        update_cache: true
+        upgrade: true
+
+    - name: Install essential packages
+      become: true
+      community.general.pacman:
+        name:
+          # development
+          - git
+          - python
+          - neovim
+          - docker
+          # DE
+          - wayland
+          - xorg-wayland
+          - pipewire
+          - sway
+          - dunst
+          # terminal
+          - zsh
+          - tmux
+          - alacritty
+          # browser
+          - firefox
+          # media
+          - mpv
+          # general
+          - openssh
+          - p7zip
+          # extra
+          - stow
+        state: present
+
+    - name: Setup dotfiles
+      git:
+        repo: https://github.com/italovieira/dotfiles.git
+        dest: ~/dotfiles/
+        update: no
