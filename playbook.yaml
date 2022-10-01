@@ -2,16 +2,19 @@
 - name: Setup ArchLinux system
   hosts: localhost
 
+  vars:
+    dotfiles_path: ~/dotfiles/
+
   tasks:
     - name: Synchronize database and upgrade packages
       become: true
-      community.general.pacman:
+      pacman:
         update_cache: true
         upgrade: true
 
     - name: Install essential packages
       become: true
-      community.general.pacman:
+      pacman:
         name:
           # development
           - git
@@ -20,9 +23,9 @@
           - docker
           # DE
           - wayland
-          - xorg-wayland
           - pipewire
           - sway
+          - waybar
           - dunst
           # terminal
           - zsh
@@ -40,7 +43,20 @@
         state: present
 
     - name: Setup dotfiles
-      git:
-        repo: https://github.com/italovieira/dotfiles.git
-        dest: ~/dotfiles/
-        update: no
+      block:
+        - name: Clone or update dotfiles repository
+          git:
+            repo: https://github.com/italovieira/dotfiles.git
+            dest: "{{ dotfiles_path }}"
+            update: no
+        - name: Put dotfiles symlinks in the target paths
+          command:
+            cmd: stow {{ item }}
+            chdir: "{{ dotfiles_path }}"
+          loop:
+            - zsh
+            - git
+            - nvim
+            - tmux
+            - sway
+            - waybar
