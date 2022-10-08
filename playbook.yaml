@@ -7,27 +7,6 @@
     user: italo
 
   tasks:
-    - name: Create user
-      become: true
-      user:
-        name: '{{ user }}'
-        state: present
-        groups:
-          - wheel
-          - docker
-        append: yes
-        generate_ssh_key: yes
-        ssh_key_type: ed25519
-
-    - name: Setup sudo
-      become: true
-      lineinfile:
-        path: /etc/sudoers.d/main
-        line: '%wheel ALL=(ALL) ALL'
-        mode: 0440
-        create: yes
-        validate: visudo --check --file %s
-
     - name: Synchronize database and upgrade packages
       become: true
       pacman:
@@ -57,6 +36,27 @@
           - p7zip
           - stow
         state: present
+
+    - name: Setup sudo
+      become: true
+      lineinfile:
+        path: /etc/sudoers.d/main
+        line: '%wheel ALL=(ALL) ALL'
+        mode: 0440
+        create: yes
+        validate: visudo --check --file %s
+
+    - name: Create user
+      become: true
+      user:
+        name: '{{ user }}'
+        state: present
+        groups:
+          - wheel
+          - docker
+        append: yes
+        generate_ssh_key: yes
+        ssh_key_type: ed25519
 
     - name: Setup dotfiles
       become: yes
