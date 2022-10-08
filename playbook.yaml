@@ -62,14 +62,14 @@
       become: yes
       become_user: '{{ user }}'
       block:
-        - name: Clone or update dotfiles repository
+        - name: Clone dotfiles repository
           git:
             repo: https://github.com/italovieira/dotfiles.git
             dest: '{{ dotfiles_path }}'
             update: no
         - name: Put dotfiles symlinks in the target paths
           command:
-            cmd: stow {{ item }}
+            cmd: stow --verbose=2 {{ item }}
             chdir: '{{ dotfiles_path }}'
           loop:
             - zsh
@@ -78,3 +78,5 @@
             - tmux
             - sway
             - waybar
+          register: stow
+          changed_when: '"--- Skipping" not in stow.stderr'
