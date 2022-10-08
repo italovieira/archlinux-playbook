@@ -19,6 +19,15 @@
         generate_ssh_key: yes
         ssh_key_type: ed25519
 
+    - name: Setup sudo
+      become: true
+      lineinfile:
+        path: /etc/sudoers.d/main
+        line: '%wheel ALL=(ALL) ALL'
+        mode: 0440
+        create: yes
+        validate: visudo --check --file %s
+
     - name: Synchronize database and upgrade packages
       become: true
       pacman:
@@ -50,6 +59,8 @@
         state: present
 
     - name: Setup dotfiles
+      become: yes
+      become_user: '{{ user }}'
       block:
         - name: Clone or update dotfiles repository
           git:
