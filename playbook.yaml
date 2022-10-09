@@ -1,6 +1,8 @@
 ---
 - name: Setup ArchLinux system
   hosts: localhost
+  connection: local
+  gather_facts: no
 
   vars:
     dotfiles_path: ~/dotfiles/
