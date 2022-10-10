@@ -1,5 +1,5 @@
 ---
-- name: Setup ArchLinux system
+- name: Setup Arch Linux system
   hosts: localhost
   connection: local
   gather_facts: no
@@ -7,6 +7,9 @@
   vars:
     dotfiles_path: ~/dotfiles/
     user: italo
+
+  handlers:
+    - import_tasks: handlers.yaml
 
   tasks:
     - name: Synchronize database and upgrade packages
@@ -25,6 +28,7 @@
           - docker
           - wayland
           - pipewire
+          - wireplumber
           - sway
           - waybar
           - dunst
@@ -82,3 +86,11 @@
             - waybar
           register: stow
           changed_when: '"--- Skipping" not in stow.stderr'
+
+    - name: Add Pipewire RNNoise input source
+      become: yes
+      become_user: '{{ user }}'
+      copy:
+        src: files/pipewire/source-rnnoise.conf
+        dest: ~/.config/pipewire/pipewire.conf.d/
+      notify: Restart pipewire
