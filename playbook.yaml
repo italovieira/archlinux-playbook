@@ -43,30 +43,30 @@
           - stow
         state: present
 
-    - name: Setup sudo
-      become: true
-      lineinfile:
-        path: /etc/sudoers.d/main
-        line: '%wheel ALL=(ALL) ALL'
-        mode: 0440
-        create: yes
-        validate: visudo --check --file %s
+    - tags: [user, never]
+      block:
+        - name: Setup sudo
+          become: true
+          lineinfile:
+            path: /etc/sudoers.d/main
+            line: '%wheel ALL=(ALL) ALL'
+            mode: 0440
+            create: yes
+            validate: visudo --check --file %s
 
-    - name: Create user
-      become: true
-      user:
-        name: '{{ user }}'
-        state: present
-        groups:
-          - wheel
-          - docker
-        append: yes
-        generate_ssh_key: yes
-        ssh_key_type: ed25519
+        - name: Create user
+          become: true
+          user:
+            name: '{{ user }}'
+            state: present
+            groups:
+              - wheel
+              - docker
+            append: yes
+            generate_ssh_key: yes
+            ssh_key_type: ed25519
 
     - name: Setup dotfiles
-      become: yes
-      become_user: '{{ user }}'
       block:
         - name: Clone dotfiles repository
           git:
@@ -88,8 +88,6 @@
           changed_when: '"--- Skipping" not in stow.stderr'
 
     - name: Add Pipewire RNNoise input source
-      become: yes
-      become_user: '{{ user }}'
       copy:
         src: files/pipewire/source-rnnoise.conf
         dest: ~/.config/pipewire/pipewire.conf.d/

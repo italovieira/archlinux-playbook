@@ -1,7 +1,5 @@
 ---
 - name: Restart pipewire
-  become: yes
-  become_user: '{{ user }}'
   systemd:
     name: pipewire
     scope: user
