@@ -27,14 +27,24 @@
           - neovim
           - docker
           - wayland
+          - polkit
+          - polkit-gnome
           - pipewire
+          - pipewire-pulse
           - wireplumber
+          - noise-suppression-for-voice
+          - pavucontrol
           - sway
           - waybar
+          - otf-font-awesome
           - dunst
+          - libnotify
+          - rofi
+          - dex
           - zsh
           - tmux
           - alacritty
+          - ttf-sourcecodepro-nerd
           - firefox
           - mpv
           - sudo
@@ -42,6 +52,40 @@
           - p7zip
           - stow
         state: present
+
+    - name: Add applications
+      copy:
+        src: files/applications/
+        dest: ~/.local/share/applications/
+
+    - name: Add autostart applications
+      copy:
+        src: files/autostart/
+        dest: ~/.config/autostart/
+
+    - name: Setup bluetooth
+      tags: [bluetooth]
+      block:
+        - name: Install bluetooth packages
+          become: true
+          pacman:
+            name:
+              - bluez
+              - bluez-utils
+              - blueman
+
+        - name: Enable fast connectable bluetooth
+          become: true
+          lineinfile:
+            path: /etc/bluetooth/main.conf
+            regexp: '#?FastConnectable ='
+            line: 'FastConnectable = true'
+
+        - name: Enable bluetooth
+          service:
+            name: bluetooth
+            enabled: true
+      notify: Restart bluetooth
 
     - tags: [user, never]
       block:
@@ -59,6 +103,7 @@
           user:
             name: '{{ user }}'
             state: present
+            shell: /bin/zsh
             groups:
               - wheel
               - docker

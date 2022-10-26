@@ -4,3 +4,8 @@
     name: pipewire
     scope: user
     state: restarted
+
+- name: Restart bluetooth
+  service:
+    name: bluetooth
+    state: restarted

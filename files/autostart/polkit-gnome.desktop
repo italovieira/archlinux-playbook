@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Polkit Gnome Agent
+GenericName=Polkit agent
+Keywords=polkit;
+Exec=/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+NoDisplay=true
+Terminal=false
+Type=Application
