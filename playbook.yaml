@@ -7,11 +7,30 @@
   vars:
     dotfiles_path: ~/dotfiles/
     user: italo
+    network_dev: enp2s0
 
   handlers:
     - import_tasks: handlers.yaml
 
   tasks:
+    - name: Setup network
+      tags: [network]
+      become: true
+      block:
+        - name: Add systemd-networkd config
+          template:
+            src: templates/systemd/network/20-wired.network.j2
+            dest: /etc/systemd/network/20-wired.network
+          notify: Restart systemd-networkd
+
+        - name: Enable systemd-networkd and systemd-resolved
+          service:
+            name: '{{ item }}'
+            enabled: true
+          loop:
+            - systemd-networkd
+            - systemd-resolved
+
     - name: Synchronize database and upgrade packages
       become: true
       pacman:
@@ -53,6 +72,14 @@
           - stow
         state: present
 
+    - name: Install AUR packages
+      kewlfft.aur.aur:
+        name:
+          - spotify
+          - kmonad-bin
+          - greetd
+        state: present
+
     - name: Add applications
       copy:
         src: files/applications/
@@ -62,6 +89,19 @@
       copy:
         src: files/autostart/
         dest: ~/.config/autostart/
+
+    - name: Setup greetd
+      become: true
+      lineinfile:
+        path: /etc/greetd/config.toml
+        regexp: ^command =
+        line: command = "agreety --cmd sway"
+
+    - name: Enable and start greetd
+      service:
+        name: greetd
+        state: started
+        enabled: true
 
     - name: Setup bluetooth
       tags: [bluetooth]
@@ -129,8 +169,40 @@
             - tmux
             - sway
             - waybar
+            - kmonad
           register: stow
           changed_when: '"--- Skipping" not in stow.stderr'
+
+    - name: Setup kmonad
+      tags: [keyboard]
+      block:
+        - name: Add udev rules
+          become: true
+          copy:
+            src: files/udev/rules.d/
+            dest: /etc/udev/rules.d/
+          notify: Reload udev rules
+
+        - name: Create kmonad config path
+          become: true
+          file:
+            path: /etc/kmonad/
+            state: directory
+
+        - name: Add kmonad config
+          become: true
+          file:
+            src: /home/italo/.config/kmonad/keychron-k12.kbd
+            dest: /etc/kmonad/config.kbd
+            state: link
+
+        - name: Enable kmonad service
+          service:
+            name: kmonad
+            enabled: true
+
+      notify: Restart kmonad
+
 
     - name: Add Pipewire RNNoise input source
       copy:
