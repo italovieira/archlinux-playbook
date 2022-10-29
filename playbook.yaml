@@ -54,6 +54,7 @@
           - noise-suppression-for-voice
           - pavucontrol
           - sway
+          - swaybg
           - waybar
           - otf-font-awesome
           - dunst
@@ -69,6 +70,7 @@
           - sudo
           - openssh
           - p7zip
+          - xdg-user-dirs   # the service is enabled automatically
           - stow
           - gnome-keyring
           - libsecret
@@ -80,6 +82,7 @@
           - spotify
           - kmonad-bin
           - greetd
+          - flavours
         state: present
 
     - name: Add applications
