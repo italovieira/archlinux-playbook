@@ -70,6 +70,8 @@
           - openssh
           - p7zip
           - stow
+          - gnome-keyring
+          - libsecret
         state: present
 
     - name: Install AUR packages
@@ -150,6 +152,29 @@
             append: yes
             generate_ssh_key: yes
             ssh_key_type: ed25519
+
+    - name: Setup automatic keyring unlocking using PAM
+      become: true
+      lineinfile:
+        path: /etc/pam.d/greetd
+        insertafter: '{{ item.insertafter }}'
+        line: '{{ item.line }}'
+      loop:
+        - insertafter: '^auth'
+          line: auth       optional     pam_gnome_keyring.so
+        - insertafter: '^session'
+          line: session    optional     pam_gnome_keyring.so auto_start
+
+    - name: Setup GNOME Keyring
+      copy:
+        src: files/systemd/user/gnome-keyring-daemon.service.d/override.conf
+        dest: ~/.config/systemd/user/gnome-keyring-daemon.service.d/
+      notify: Reload systemd user daemon
+
+    - name: Export env to SSH Agent socket
+      lineinfile:
+        path: ~/.zprofile
+        line: export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/keyring/ssh
 
     - name: Setup dotfiles
       block:

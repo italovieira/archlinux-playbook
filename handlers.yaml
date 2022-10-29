@@ -24,3 +24,7 @@
   become: true
   shell: udevadm control --reload && udevadm trigger
 
+- name: Reload systemd user daemon
+  systemd:
+    scope: user
+    daemon_reload: yes
