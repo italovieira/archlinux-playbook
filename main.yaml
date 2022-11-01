@@ -8,6 +8,8 @@
     dotfiles_path: ~/dotfiles/
     user: italo
     network_dev: enp2s0
+    pacman:
+      parallel_downloads: 12
 
   handlers:
     - import_tasks: handlers.yaml
@@ -30,6 +32,18 @@
           loop:
             - systemd-networkd
             - systemd-resolved
+
+    - name: Adjust pacman options
+      become: yes
+      lineinfile:
+        path: /etc/pacman.conf
+        regexp: '{{ item.regexp }}'
+        line: '{{ item.line }}'
+      loop:
+        - regexp: ^#?Color$
+          line: Color
+        - regexp: ^#?ParallelDownloads =
+          line: ParallelDownloads = {{ pacman.parallel_downloads }}
 
     - name: Synchronize database and upgrade packages
       become: yes
