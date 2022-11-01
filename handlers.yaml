@@ -21,7 +21,7 @@
     state: restarted
 
 - name: Reload udev rules
-  become: true
+  become: yes
   shell: udevadm control --reload && udevadm trigger
 
 - name: Reload systemd user daemon

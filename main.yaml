@@ -15,7 +15,7 @@
   tasks:
     - name: Setup network
       tags: [network]
-      become: true
+      become: yes
       block:
         - name: Add systemd-networkd config
           template:
@@ -26,19 +26,19 @@
         - name: Enable systemd-networkd and systemd-resolved
           service:
             name: '{{ item }}'
-            enabled: true
+            enabled: yes
           loop:
             - systemd-networkd
             - systemd-resolved
 
     - name: Synchronize database and upgrade packages
-      become: true
+      become: yes
       pacman:
-        update_cache: true
-        upgrade: true
+        update_cache: yes
+        upgrade: yes
 
     - name: Install essential packages
-      become: true
+      become: yes
       pacman:
         name:
           - git
@@ -96,7 +96,7 @@
         dest: ~/.config/autostart/
 
     - name: Setup greetd
-      become: true
+      become: yes
       lineinfile:
         path: /etc/greetd/config.toml
         regexp: ^command =
@@ -106,13 +106,13 @@
       service:
         name: greetd
         state: started
-        enabled: true
+        enabled: yes
 
     - name: Setup bluetooth
       tags: [bluetooth]
       block:
         - name: Install bluetooth packages
-          become: true
+          become: yes
           pacman:
             name:
               - bluez
@@ -120,7 +120,7 @@
               - blueman
 
         - name: Enable fast connectable bluetooth
-          become: true
+          become: yes
           lineinfile:
             path: /etc/bluetooth/main.conf
             regexp: '#?FastConnectable ='
@@ -129,13 +129,13 @@
         - name: Enable bluetooth
           service:
             name: bluetooth
-            enabled: true
+            enabled: yes
       notify: Restart bluetooth
 
     - tags: [user, never]
       block:
         - name: Setup sudo
-          become: true
+          become: yes
           lineinfile:
             path: /etc/sudoers.d/main
             line: '%wheel ALL=(ALL) ALL'
@@ -144,7 +144,7 @@
             validate: visudo --check --file %s
 
         - name: Create user
-          become: true
+          become: yes
           user:
             name: '{{ user }}'
             state: present
@@ -157,7 +157,7 @@
             ssh_key_type: ed25519
 
     - name: Setup automatic keyring unlocking using PAM
-      become: true
+      become: yes
       lineinfile:
         path: /etc/pam.d/greetd
         insertafter: '{{ item.insertafter }}'
@@ -205,20 +205,20 @@
       tags: [keyboard]
       block:
         - name: Add udev rules
-          become: true
+          become: yes
           copy:
             src: files/udev/rules.d/
             dest: /etc/udev/rules.d/
           notify: Reload udev rules
 
         - name: Create kmonad config path
-          become: true
+          become: yes
           file:
             path: /etc/kmonad/
             state: directory
 
         - name: Add kmonad config
-          become: true
+          become: yes
           file:
             src: /home/italo/.config/kmonad/keychron-k12.kbd
             dest: /etc/kmonad/config.kbd
@@ -227,7 +227,7 @@
         - name: Enable kmonad service
           service:
             name: kmonad
-            enabled: true
+            enabled: yes
 
       notify: Restart kmonad
 
