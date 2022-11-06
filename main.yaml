@@ -16,6 +16,14 @@
     - import_tasks: handlers.yaml
 
   tasks:
+    - name: Add kernel parameters at boot
+      become: yes
+      lineinfile:
+        path: /boot/loader/entries/arch.conf
+        regexp: ^options ((.(?!quiet splash))*)$
+        line: options \1 quiet splash
+        backrefs: yes
+
     - name: Setup network
       tags: [network]
       become: yes
