@@ -82,10 +82,11 @@
           - sway
           - swaybg
           - waybar
+          - xorg-xwayland
+          - rofi
           - otf-font-awesome
           - dunst
           - libnotify
-          - rofi
           - dex
           - zsh
           - tmux
@@ -105,7 +106,6 @@
     - name: Install AUR packages
       kewlfft.aur.aur:
         name:
-          - spotify
           - kmonad-bin
           - greetd
           - flavours
@@ -129,6 +129,7 @@
         line: command = "agreety --cmd sway"
 
     - name: Enable and start greetd
+      become: yes
       service:
         name: greetd
         state: started
@@ -153,6 +154,7 @@
             line: 'FastConnectable = true'
 
         - name: Enable bluetooth
+          become: yes
           service:
             name: bluetooth
             enabled: yes
@@ -182,6 +184,32 @@
             generate_ssh_key: yes
             ssh_key_type: ed25519
 
+    - name: Setup dotfiles
+      block:
+        - name: Clone dotfiles repository
+          git:
+            repo: https://github.com/italovieira/dotfiles.git
+            dest: '{{ dotfiles_path }}'
+            update: no
+        - name: Put dotfiles symlinks in the target paths
+          command:
+            cmd: stow --verbose=2 {{ item }}
+            chdir: '{{ dotfiles_path }}'
+          loop:
+            - zsh
+            - git
+            - nvim
+            - tmux
+            - sway
+            - waybar
+            - rofi
+            - alacritty
+            - kmonad
+            - flavours
+            - dunst
+          register: stow
+          changed_when: '"--- Skipping" not in stow.stderr'
+
     - name: Setup automatic keyring unlocking using PAM
       become: yes
       lineinfile:
@@ -205,27 +233,6 @@
         path: ~/.zprofile
         line: export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/keyring/ssh
 
-    - name: Setup dotfiles
-      block:
-        - name: Clone dotfiles repository
-          git:
-            repo: https://github.com/italovieira/dotfiles.git
-            dest: '{{ dotfiles_path }}'
-            update: no
-        - name: Put dotfiles symlinks in the target paths
-          command:
-            cmd: stow --verbose=2 {{ item }}
-            chdir: '{{ dotfiles_path }}'
-          loop:
-            - zsh
-            - git
-            - nvim
-            - tmux
-            - sway
-            - waybar
-            - kmonad
-          register: stow
-          changed_when: '"--- Skipping" not in stow.stderr'
 
     - name: Setup kmonad
       tags: [keyboard]
@@ -251,6 +258,7 @@
             state: link
 
         - name: Enable kmonad service
+          become: yes
           service:
             name: kmonad
             enabled: yes

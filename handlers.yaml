@@ -1,21 +1,25 @@
 ---
 - name: Restart systemd-networkd
+  become: yes
   systemd:
     name: systemd-networkd
     state: restarted
 
 - name: Restart pipewire
+  become: yes
   systemd:
     name: pipewire
     scope: user
     state: restarted
 
 - name: Restart bluetooth
+  become: yes
   service:
     name: bluetooth
     state: restarted
 
 - name: Restart kmonad
+  become: yes
   service:
     name: kmonad
     state: restarted
