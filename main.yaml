@@ -4,13 +4,7 @@
   connection: local
   gather_facts: no
 
-  vars:
-    dotfiles_path: ~/dotfiles/
-    user: italo
-    network_dev: enp2s0
-    pacman:
-      parallel_downloads: 12
-    timezone: America/Recife
+  vars_files: config.yaml
 
   handlers:
     - import_tasks: handlers.yaml

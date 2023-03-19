@@ -1,0 +1,7 @@
+---
+dotfiles_path: ~/dotfiles/
+user: italo
+network_dev: enp2s0
+pacman:
+  parallel_downloads: 12
+timezone: America/Recife
