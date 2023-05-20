@@ -95,13 +95,13 @@
           - stow
           - gnome-keyring
           - libsecret
+          - greetd
         state: present
 
     - name: Install AUR packages
       kewlfft.aur.aur:
         name:
           - kmonad-bin
-          - greetd
           - flavours
         state: present
 
