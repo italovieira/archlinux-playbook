@@ -116,12 +116,19 @@
         src: files/autostart/
         dest: ~/.config/autostart/
 
+    - name: Create sway executable with custom environments
+      become: yes
+      copy:
+        src: files/usr/local/bin/sway-run
+        dest: /usr/local/bin/sway-run
+        mode: 0755
+
     - name: Setup greetd
       become: yes
       lineinfile:
         path: /etc/greetd/config.toml
         regexp: ^command =
-        line: command = "agreety --cmd sway"
+        line: command = "agreety --cmd sway-run"
 
     - name: Enable and start greetd
       become: yes
