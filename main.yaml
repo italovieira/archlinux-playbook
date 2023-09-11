@@ -273,3 +273,11 @@
         src: files/pipewire/source-rnnoise.conf
         dest: ~/.config/pipewire/pipewire.conf.d/
       notify: Restart pipewire
+
+
+    - name: Set GTK theme
+      command: '{{ item }}'
+      loop:
+        - gsettings set org.gnome.desktop.interface gtk-theme '{{ gtk_theme }}'
+        - gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+      tags: theme
