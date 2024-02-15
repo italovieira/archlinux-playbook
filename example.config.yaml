@@ -1,7 +1,8 @@
 ---
 dotfiles_path: ~/dotfiles/
 user: italo
-network_dev: enp2s0
+net_ethernet_dev: enp2s0
+net_wifi_dev: wlan0
 pacman:
   parallel_downloads: 12
 timezone: America/Recife

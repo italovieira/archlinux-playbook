@@ -4,15 +4,15 @@
 
 2. Install requirements.
 ```sh
-ansible-galaxy collection install -r requirements.yml
+make requirements
 ```
 
 3. Run!
 ```sh
-ansible-playbook playbook.yml --ask-become-pass
+make
 ```
 
 If desired run the task to create and configure the user.
 ```sh
-ansible-playbook playbook.yml --tags user
+make user
 ```

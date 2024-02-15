@@ -11,21 +11,27 @@
 
   tasks:
     - name: Add kernel parameters at boot
-      become: yes
       lineinfile:
         path: /boot/loader/entries/arch.conf
         regexp: ^options ((.(?!quiet splash))*)$
         line: options \1 quiet splash
         backrefs: yes
+      become: yes
 
     - name: Setup network
       tags: [network]
       become: yes
       block:
-        - name: Add systemd-networkd config
+        - name: Add systemd-networkd config for Ethernet adapter
           template:
-            src: templates/systemd/network/20-wired.network.j2
-            dest: /etc/systemd/network/20-wired.network
+            src: templates/systemd/network/10-wired.network.j2
+            dest: /etc/systemd/network/10-wired.network
+          notify: Restart systemd-networkd
+
+        - name: Add systemd-networkd config for wireless adapter
+          template:
+            src: templates/systemd/network/20-wireless.network.j2
+            dest: /etc/systemd/network/20-wireless.network
           notify: Restart systemd-networkd
 
         - name: Enable systemd-networkd and systemd-resolved
@@ -38,6 +44,7 @@
 
     - name: Ensure system has correct timezone
       timezone: name={{ timezone }}
+      become: yes
 
     - name: Adjust pacman options
       become: yes
@@ -64,6 +71,8 @@
           - git
           - python
           - neovim
+          - man-db
+          - man-pages
           - docker
           - wayland
           - polkit
@@ -76,6 +85,9 @@
           - sway
           - swaybg
           - waybar
+          - grim
+          - slurp
+          - wl-clipboard
           - xorg-xwayland
           - xdg-desktop-portal-wlr
           - rofi
@@ -93,6 +105,7 @@
           - openssh
           - p7zip
           - xdg-user-dirs   # the service is enabled automatically
+          - xdg-utils       # for xdg-open
           - stow
           - gnome-keyring
           - libsecret
@@ -262,11 +275,10 @@
         - name: Enable kmonad service
           become: yes
           service:
-            name: kmonad
+            name: kmonad@config
             enabled: yes
 
       notify: Restart kmonad
-
 
     - name: Add Pipewire RNNoise input source
       copy:
