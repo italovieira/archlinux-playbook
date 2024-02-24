@@ -108,6 +108,7 @@
           - xdg-utils       # for xdg-open
           - stow
           - gnome-keyring
+          - gcr-4           # see https://wiki.archlinux.org/index.php?title=GNOME/Keyring&oldid=801104#SSH_keys
           - libsecret
           - greetd
         state: present
@@ -246,8 +247,13 @@
     - name: Export env to SSH Agent socket
       lineinfile:
         path: ~/.zprofile
-        line: export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/keyring/ssh
+        line: export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/gcr/ssh
 
+    - name: Enable gcr SSH agent
+      systemd:
+        name: gcr-ssh-agent.socket
+        enabled: yes
+        scope: user
 
     - name: Setup kmonad
       tags: [keyboard]
