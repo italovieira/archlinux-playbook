@@ -117,8 +117,22 @@
       kewlfft.aur.aur:
         name:
           - kmonad-bin
-          - flavours
         state: present
+
+    - name: Install some Rust packages
+      block:
+        - name: Install packages using cargo
+          community.general.cargo:
+            name: '{{ rust_packages }}'
+        - name: Create packages symlink to ~/.local/bin/
+          file:
+            state: link
+            src: '~/.cargo/bin/{{ item }}'
+            dest: ~/.local/bin/{{ item }}
+          loop:
+            '{{ rust_packages }}'
+      vars:
+        rust_packages: [tinty]
 
     - name: Add applications
       copy:
@@ -221,10 +235,10 @@
             - rofi
             - alacritty
             - kmonad
-            - flavours
             - dunst
           register: stow
           changed_when: '"--- Skipping" not in stow.stderr'
+      tags: [dotfiles]
 
     - name: Setup automatic keyring unlocking using PAM
       become: yes

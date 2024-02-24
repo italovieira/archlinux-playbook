@@ -2,6 +2,8 @@ main:
 	ansible-playbook main.yaml --ask-become-pass
 theme:
 	ansible-playbook main.yaml --ask-become-pass --tags theme
+dotfiles:
+	ansible-playbook main.yaml --tags dotfiles
 user:
 	ansible-playbook main.yaml --ask-become-pass --tags user
 requirements:
