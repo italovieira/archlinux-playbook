@@ -73,7 +73,6 @@
           - neovim
           - man-db
           - man-pages
-          - docker
           - wayland
           - polkit
           - polkit-gnome
@@ -90,7 +89,6 @@
           - wl-clipboard
           - xorg-xwayland
           - xdg-desktop-portal-wlr
-          - rofi
           - otf-font-awesome
           - dunst
           - libnotify
@@ -111,12 +109,14 @@
           - gcr-4           # see https://wiki.archlinux.org/index.php?title=GNOME/Keyring&oldid=801104#SSH_keys
           - libsecret
           - greetd
+          - power-profiles-daemon
         state: present
 
     - name: Install AUR packages
       kewlfft.aur.aur:
         name:
           - kmonad-bin
+          - rofi-lbonn-wayland
         state: present
 
     - name: Install some Rust packages
