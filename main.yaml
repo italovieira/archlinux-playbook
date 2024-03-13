@@ -81,14 +81,14 @@
           - wireplumber
           - noise-suppression-for-voice
           - pavucontrol
-          - sway
+          - hyprland
           - swaybg
           - waybar
           - grim
           - slurp
           - wl-clipboard
           - xorg-xwayland
-          - xdg-desktop-portal-wlr
+          - xdg-desktop-portal-hyprland
           - otf-font-awesome
           - dunst
           - libnotify
@@ -144,11 +144,11 @@
         src: files/autostart/
         dest: ~/.config/autostart/
 
-    - name: Create sway executable with custom environments
+    - name: Create hyprland executable with custom environments
       become: yes
       copy:
-        src: files/usr/local/bin/sway-run
-        dest: /usr/local/bin/sway-run
+        src: files/usr/local/bin/hyprland-run
+        dest: /usr/local/bin/hyprland-run
         mode: 0755
 
     - name: Setup greetd
@@ -156,7 +156,7 @@
       lineinfile:
         path: /etc/greetd/config.toml
         regexp: ^command =
-        line: command = "agreety --cmd sway-run"
+        line: command = "agreety --cmd hyprland-run"
 
     - name: Enable and start greetd
       become: yes
