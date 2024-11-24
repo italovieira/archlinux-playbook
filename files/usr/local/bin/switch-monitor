@@ -1,0 +1,14 @@
+#!/bin/sh
+DISPLAY_1_TARGET_INPUT=x11
+DISPLAY_1_CURRENT_INPUT=$(ddcutil getvcp x60 --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}')
+
+DISPLAY_2_TARGET_INPUT=x0f
+DISPLAY_2_CURRENT_INPUT=$(ddcutil getvcp x60 --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.3 | awk '{print $4}')
+
+if [ "$DISPLAY_1_TARGET_INPUT" != "$DISPLAY_1_CURRENT_INPUT" ]; then
+  ddcutil setvcp x60 "$DISPLAY_1_TARGET_INPUT" --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.2 &
+fi
+if [ "$DISPLAY_2_TARGET_INPUT" != "$DISPLAY_2_CURRENT_INPUT" ]; then
+  ddcutil setvcp x60 "$DISPLAY_2_TARGET_INPUT" --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.4 &
+fi
+wait

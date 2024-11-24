@@ -272,10 +272,10 @@
     - name: Setup kmonad
       tags: [keyboard]
       block:
-        - name: Add udev rules
+        - name: Add udev rule
           become: yes
           copy:
-            src: files/udev/rules.d/
+            src: files/udev/rules.d/99-keychron_k12.rules
             dest: /etc/udev/rules.d/
           notify: Reload udev rules
 
@@ -313,3 +313,19 @@
         - gsettings set org.gnome.desktop.interface gtk-theme '{{ gtk_theme }}'
         - gsettings set org.gnome.desktop.interface color-scheme prefer-dark
       tags: theme
+
+    - name: Switch monitor input when keyboard gets plugged in
+      tags: monitor
+      block:
+        - name: Add udev rule
+          become: yes
+          copy:
+            src: files/udev/rules.d/99-switch_input.keyboard_plugged.rules
+            dest: /etc/udev/rules.d/
+          notify: Reload udev rules
+
+        - name: Copy script to switch input
+          become: yes
+          copy:
+            src: files/usr/local/bin/switch-monitor
+            dest: /usr/local/bin/
