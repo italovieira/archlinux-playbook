@@ -297,3 +297,18 @@
           copy:
             src: files/usr/local/bin/switch-monitor
             dest: /usr/local/bin/
+
+    - name: Install and enable nftables
+      block:
+        - name: Install iptables-nft
+          become: yes
+          pacman:
+            name: iptables-nft
+            state: present
+
+        - name: Ensure nftables service is enabled
+          become: yes
+          systemd:
+            name: nftables
+            state: started
+            enabled: true
