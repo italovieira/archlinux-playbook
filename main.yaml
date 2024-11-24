@@ -115,7 +115,6 @@
     - name: Install AUR packages
       kewlfft.aur.aur:
         name:
-          - kmonad-bin
           - rofi-lbonn-wayland
         state: present
 
@@ -268,37 +267,6 @@
         name: gcr-ssh-agent.socket
         enabled: yes
         scope: user
-
-    - name: Setup kmonad
-      tags: [keyboard]
-      block:
-        - name: Add udev rule
-          become: yes
-          copy:
-            src: files/udev/rules.d/99-keychron_k12.rules
-            dest: /etc/udev/rules.d/
-          notify: Reload udev rules
-
-        - name: Create kmonad config path
-          become: yes
-          file:
-            path: /etc/kmonad/
-            state: directory
-
-        - name: Add kmonad config
-          become: yes
-          file:
-            src: /home/italo/.config/kmonad/keychron-k12.kbd
-            dest: /etc/kmonad/config.kbd
-            state: link
-
-        - name: Enable kmonad service
-          become: yes
-          service:
-            name: kmonad@config
-            enabled: yes
-
-      notify: Restart kmonad
 
     - name: Add Pipewire RNNoise input source
       copy:

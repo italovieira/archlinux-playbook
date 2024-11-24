@@ -1,0 +1,54 @@
+---
+- name: Setup Arch Linux system
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Install AUR packages
+      kewlfft.aur.aur:
+        name:
+          - kmonad-bin
+        state: present
+
+    - name: Add udev rule
+      become: yes
+      copy:
+        src: files/udev/rules.d/99-keychron_k12.rules
+        dest: /etc/udev/rules.d/
+      notify: Reload udev rules
+
+    - name: Create kmonad config path
+      become: yes
+      file:
+        path: /etc/kmonad/
+        state: directory
+
+    - name: Setup kmonad dotfiles
+      block:
+        - name: Clone dotfiles repository
+          git:
+            repo: https://github.com/italovieira/dotfiles.git
+            dest: '{{ dotfiles_path }}'
+            update: no
+        - name: Put kmonad dotfiles symlink in the target path
+          command:
+            cmd: stow --verbose=2 kmonad
+            chdir: '{{ dotfiles_path }}'
+          register: stow
+          changed_when: '"--- Skipping" not in stow.stderr'
+
+    - name: Add kmonad config
+      become: yes
+      file:
+        src: /home/italo/.config/kmonad/keychron-k12.kbd
+        dest: /etc/kmonad/config.kbd
+        state: link
+
+    - name: Enable kmonad service
+      become: yes
+      service:
+        name: kmonad@config
+        enabled: yes
+
+      notify: Restart kmonad
