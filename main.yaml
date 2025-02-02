@@ -259,7 +259,7 @@
 
     - name: Export env to SSH Agent socket
       lineinfile:
-        path: ~/.zprofile
+        path: ~/.profile
         line: export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/gcr/ssh
 
     - name: Enable gcr SSH agent
