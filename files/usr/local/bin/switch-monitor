@@ -1,14 +1,51 @@
 #!/bin/sh
-DISPLAY_1_TARGET_INPUT=x11
-DISPLAY_1_CURRENT_INPUT=$(ddcutil getvcp x60 --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}')
 
-DISPLAY_2_TARGET_INPUT=x0f
-DISPLAY_2_CURRENT_INPUT=$(ddcutil getvcp x60 --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.3 | awk '{print $4}')
-
-if [ "$DISPLAY_1_TARGET_INPUT" != "$DISPLAY_1_CURRENT_INPUT" ]; then
-  ddcutil setvcp x60 "$DISPLAY_1_TARGET_INPUT" --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.2 &
+if [ -z "$1" ]; then
+  echo "Usage: $0 {toggle|this|other}" >&2
+  exit 1
 fi
-if [ "$DISPLAY_2_TARGET_INPUT" != "$DISPLAY_2_CURRENT_INPUT" ]; then
-  ddcutil setvcp x60 "$DISPLAY_2_TARGET_INPUT" --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.4 &
+
+THIS_DISPLAY_1_INPUT=x11
+THIS_DISPLAY_2_INPUT=x0f
+OTHER_DISPLAY_1_INPUT=x12
+OTHER_DISPLAY_2_INPUT=x11
+
+toggle() {
+  CURRENT=$(ddcutil getvcp x60 --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}')
+  if [ "$CURRENT" = "$THIS_DISPLAY_1_INPUT" ]; then
+    DISPLAY_1_INPUT="$OTHER_DISPLAY_1_INPUT"
+    DISPLAY_2_INPUT="$OTHER_DISPLAY_2_INPUT"
+  else
+    DISPLAY_1_INPUT="$THIS_DISPLAY_1_INPUT"
+    DISPLAY_2_INPUT="$THIS_DISPLAY_2_INPUT"
+  fi
+}
+
+case "$1" in
+  toggle)
+    toggle
+    ;;
+  this)
+    DISPLAY_1_INPUT="$THIS_DISPLAY_1_INPUT"
+    DISPLAY_2_INPUT="$THIS_DISPLAY_2_INPUT"
+    ;;
+  other)
+    DISPLAY_1_INPUT="$OTHER_DISPLAY_1_INPUT"
+    DISPLAY_2_INPUT="$OTHER_DISPLAY_2_INPUT"
+    ;;
+  *)
+    echo "Usage: $0 [toggle|this|other]" >&2
+    exit 1
+    ;;
+esac
+
+DISPLAY_1_CURRENT=$(ddcutil getvcp x60 --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}')
+DISPLAY_2_CURRENT=$(ddcutil getvcp x60 --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.3 | awk '{print $4}')
+
+if [ "$DISPLAY_1_INPUT" != "$DISPLAY_1_CURRENT" ]; then
+  ddcutil setvcp x60 "$DISPLAY_1_INPUT" --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.2 &
+fi
+if [ "$DISPLAY_2_INPUT" != "$DISPLAY_2_CURRENT" ]; then
+  ddcutil setvcp x60 "$DISPLAY_2_INPUT" --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.4 &
 fi
 wait
