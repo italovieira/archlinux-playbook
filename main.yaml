@@ -82,6 +82,7 @@
           - noise-suppression-for-voice
           - pavucontrol
           - hyprland
+          - rofi
           - swaybg
           - waybar
           - grim
@@ -110,12 +111,6 @@
           - libsecret
           - greetd
           - power-profiles-daemon
-        state: present
-
-    - name: Install AUR packages
-      kewlfft.aur.aur:
-        name:
-          - rofi-lbonn-wayland
         state: present
 
     - name: Install some Rust packages
