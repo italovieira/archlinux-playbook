@@ -1,2 +1,2 @@
-ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1ea7", ATTR{idProduct}=="6062", RUN+="/usr/local/bin/switch-monitor this"
-ACTION=="remove", SUBSYSTEM=="usb", ENV{PRODUCT}=="1ea7/6062/100", RUN+="/usr/local/bin/switch-monitor other"
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1ea7", ATTR{idProduct}=="6062", RUN+="/usr/local/bin/switch-monitor both --input primary"
+ACTION=="remove", SUBSYSTEM=="usb", ENV{PRODUCT}=="1ea7/6062/100", RUN+="/usr/local/bin/switch-monitor both --input secondary"

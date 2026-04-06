@@ -1,51 +1,128 @@
 #!/bin/sh
 
-if [ -z "$1" ]; then
-  echo "Usage: $0 {toggle|this|other}" >&2
-  exit 1
-fi
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [target] --input {primary|secondary}
+       $(basename "$0") [target] --toggle
 
-THIS_DISPLAY_1_INPUT=x11
-THIS_DISPLAY_2_INPUT=x0f
-OTHER_DISPLAY_1_INPUT=x12
-OTHER_DISPLAY_2_INPUT=x11
+Switch monitor input(s) via DDC/CI.
 
-toggle() {
-  CURRENT=$(ddcutil getvcp x60 --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}')
-  if [ "$CURRENT" = "$THIS_DISPLAY_1_INPUT" ]; then
-    DISPLAY_1_INPUT="$OTHER_DISPLAY_1_INPUT"
-    DISPLAY_2_INPUT="$OTHER_DISPLAY_2_INPUT"
-  else
-    DISPLAY_1_INPUT="$THIS_DISPLAY_1_INPUT"
-    DISPLAY_2_INPUT="$THIS_DISPLAY_2_INPUT"
+Arguments:
+  target        Which monitor(s) to target: left, right, both (default)
+
+Options:
+  -i, --input    Set input to 'primary' or 'secondary' (default: primary)
+  -t, --toggle   Toggle between inputs (exclusive with --input)
+
+Examples:
+  $(basename "$0") left --input primary      # left monitor to primary
+  $(basename "$0") right --toggle          # toggle right monitor
+  $(basename "$0") --input secondary        # both monitors to secondary
+  $(basename "$0") --toggle                # toggle both monitors
+EOF
+}
+
+LEFT_PRIMARY=x0f
+LEFT_ALTERNATE=x11
+RIGHT_PRIMARY=x11
+RIGHT_ALTERNATE=x12
+
+ddc_get() {
+  ddcutil getvcp x60 --display "$1" --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}'
+}
+
+ddc_set() {
+  ddcutil setvcp x60 "$1" --display "$2" --brief --skip-ddc-checks --sleep-multiplier 0.2 &
+}
+
+apply_input() {
+  MONITOR="$1"
+  INPUT="$2"
+  CURRENT=$(ddc_get "$MONITOR")
+  if [ "$INPUT" != "$CURRENT" ]; then
+    ddc_set "$INPUT" "$MONITOR"
   fi
 }
 
-case "$1" in
+PARSED=$(getopt -o "hi:t" -l "help,input:,toggle" -n "$(basename "$0")" -- "$@")
+
+if [ $? -ne 0 ]; then
+  usage >&2
+  exit 1
+fi
+
+eval set -- "$PARSED"
+
+TARGET=""
+INPUT_MODE="primary"
+
+while true; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -i|--input)
+      INPUT_MODE="$2"
+      shift 2
+      ;;
+    -t|--toggle)
+      INPUT_MODE="toggle"
+      shift
+      ;;
+    left|right|both)
+      TARGET="$1"
+      shift
+      ;;
+    --)
+      shift
+      ;;
+    "")
+      break
+      ;;
+    *)
+      echo "Error: invalid target '$1'. Use: left, right, or both" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$TARGET" ]; then
+  TARGET="both"
+fi
+
+case "$INPUT_MODE" in
+  primary)
+    LEFT_INPUT="$LEFT_PRIMARY"
+    RIGHT_INPUT="$RIGHT_PRIMARY"
+    ;;
+  secondary)
+    LEFT_INPUT="$LEFT_ALTERNATE"
+    RIGHT_INPUT="$RIGHT_ALTERNATE"
+    ;;
   toggle)
-    toggle
-    ;;
-  this)
-    DISPLAY_1_INPUT="$THIS_DISPLAY_1_INPUT"
-    DISPLAY_2_INPUT="$THIS_DISPLAY_2_INPUT"
-    ;;
-  other)
-    DISPLAY_1_INPUT="$OTHER_DISPLAY_1_INPUT"
-    DISPLAY_2_INPUT="$OTHER_DISPLAY_2_INPUT"
+    LEFT_CURRENT=$(ddc_get 2)
+    RIGHT_CURRENT=$(ddc_get 1)
+    [ "$LEFT_CURRENT" = "$LEFT_PRIMARY" ] && LEFT_INPUT="$LEFT_ALTERNATE" || LEFT_INPUT="$LEFT_PRIMARY"
+    [ "$RIGHT_CURRENT" = "$RIGHT_PRIMARY" ] && RIGHT_INPUT="$RIGHT_ALTERNATE" || RIGHT_INPUT="$RIGHT_PRIMARY"
     ;;
   *)
-    echo "Usage: $0 [toggle|this|other]" >&2
+    echo "Error: invalid input mode '$INPUT_MODE'. Use: primary, secondary, or toggle" >&2
     exit 1
     ;;
 esac
 
-DISPLAY_1_CURRENT=$(ddcutil getvcp x60 --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.1 | awk '{print $4}')
-DISPLAY_2_CURRENT=$(ddcutil getvcp x60 --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.3 | awk '{print $4}')
+case "$TARGET" in
+  left)
+    apply_input 2 "$LEFT_INPUT"
+    ;;
+  right)
+    apply_input 1 "$RIGHT_INPUT"
+    ;;
+  both)
+    apply_input 2 "$LEFT_INPUT"
+    apply_input 1 "$RIGHT_INPUT"
+    ;;
+esac
 
-if [ "$DISPLAY_1_INPUT" != "$DISPLAY_1_CURRENT" ]; then
-  ddcutil setvcp x60 "$DISPLAY_1_INPUT" --display 1 --brief --skip-ddc-checks --sleep-multiplier 0.2 &
-fi
-if [ "$DISPLAY_2_INPUT" != "$DISPLAY_2_CURRENT" ]; then
-  ddcutil setvcp x60 "$DISPLAY_2_INPUT" --display 2 --brief --skip-ddc-checks --sleep-multiplier 0.4 &
-fi
 wait
