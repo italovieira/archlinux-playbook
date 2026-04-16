@@ -63,6 +63,7 @@
       pacman:
         update_cache: yes
         upgrade: yes
+      when: false
 
     - name: Install essential packages
       become: yes
@@ -112,6 +113,7 @@
           - greetd
           - power-profiles-daemon
         state: present
+      when: false
 
     - name: Install some Rust packages
       block:
@@ -150,7 +152,7 @@
       lineinfile:
         path: /etc/greetd/config.toml
         regexp: ^command =
-        line: command = "agreety --cmd hyprland-run"
+        line: command = "agreety --cmd start-hyprland"
 
     - name: Enable and start greetd
       become: yes
