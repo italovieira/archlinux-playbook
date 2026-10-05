@@ -24,6 +24,13 @@
     name: kmonad
     state: restarted
 
+- name: Restart systemd-zram-setup
+  become: yes
+  systemd:
+    name: systemd-zram-setup@zram0.service
+    state: restarted
+    daemon_reload: yes
+
 - name: Reload udev rules
   become: yes
   shell: udevadm control --reload && udevadm trigger
